@@ -1,0 +1,100 @@
+Sub CreateTOC()
+    '   Code by Zack Baresse
+    If ActiveWorkbook Is Nothing Then
+        MsgBox "Morate prvo da orvorite radnu svesku!", vbInformation, "Nema otvorene sveske"
+        Exit Sub
+    End If
+    
+    With Application
+        .ScreenUpdating = False
+        .DisplayAlerts = False
+    
+        Dim ws As Worksheet, _
+            ct As Chart, _
+            shtName As String, _
+            nrow As Long, _
+            tmpCount As Long, _
+            i As Long, _
+            numCharts As Long
+        
+        nrow = 3
+        i = 1
+        numCharts = ActiveWorkbook.Charts.Count
+        
+        On Error GoTo hasSheet
+        Sheets("Spisak").Activate
+        If MsgBox("Vec postoji stranica sa Spiskom.  Da je ponovo napravim?", _
+        vbYesNo + vbQuestion, "Napravi novu?") = vbYes Then GoTo createNew
+        Exit Sub
+
+hasSheet:
+    Sheets.Add Before:=Sheets(1)
+    GoTo hasNew
+
+createNew:
+    Sheets("Spisak").Delete
+    GoTo hasSheet
+
+hasNew:
+    tmpCount = ActiveWorkbook.Charts.Count
+    If tmpCount > 0 Then tmpCount = 1
+        ActiveSheet.Name = "Spisak"
+        
+        With Sheets("Spisak")
+            '.Cells.Interior.ColorIndex = 4
+                With .Range("B2")
+                    .Value = "Spisak"
+                    .Font.Bold = True
+                    .Font.Name = "Calibri"
+                    .Font.Size = "24"
+                End With
+        End With
+        
+        For Each ws In ActiveWorkbook.Worksheets
+            nrow = nrow + 1
+            With ws
+                shtName = ws.Name
+                With Sheets("Spisak")
+                    .Range("B" & nrow).Value = nrow - 3
+                    .Range("C" & nrow).Hyperlinks.Add _
+                        Anchor:=Sheets("Spisak").Range("C" & nrow), Address:="#'" & _
+                        shtName & "'!A1", TextToDisplay:=shtName
+                    .Range("C" & nrow).HorizontalAlignment = xlLeft
+                End With
+            End With
+        Next ws
+        
+        If numCharts <> 0 Then
+            For Each ct In ActiveWorkbook.Charts
+                nrow = nrow + 1
+                shtName = ct.Name
+                With Sheets("Table of Contents")
+                    .Range("B" & nrow).Value = nrow - 3
+                    .Range("C" & nrow).Value = shtName
+                    .Range("C" & nrow).HorizontalAlignment = xlLeft
+                End With
+            Next ct
+        End If
+        
+        With Sheets("Spisak")
+            With .Range("B2:G2")
+                .MergeCells = True
+                .HorizontalAlignment = xlLeft
+            End With
+        
+            With .Range("C:C")
+                .EntireColumn.AutoFit
+                .Activate
+            End With
+            .Range("B4").Select
+        End With
+    
+        .DisplayAlerts = True
+        .ScreenUpdating = True
+    End With
+    
+    MsgBox "OK!" & vbNewLine & vbNewLine & "Napomena: " & _
+        "Grafikoni su na spisku posle " & vbCrLf & _
+        "radnih listova i neće biti linkovani.", vbInformation, "Završeno!"
+
+End Sub
