@@ -1,0 +1,22 @@
+Sub DeleteRows()
+    Dim iStart As Integer
+    Dim iEnd As Integer
+    Dim iCount As Integer
+    Dim iStep As Integer
+    Dim J As Integer
+
+    iStep = 2    'Delete every 2nd row
+    Application.ScreenUpdating = False
+    iStart = 1
+    iCount = Selection.Rows.Count
+    'Find ending row to start deleting
+    For J = iStart To iCount Step iStep
+        iEnd = J
+    Next
+
+    Do While iEnd >= iStart
+        Selection.Rows(iEnd).Delete
+        iEnd = iEnd – iStep
+    Loop
+    Application.ScreenUpdating = True
+End Sub
