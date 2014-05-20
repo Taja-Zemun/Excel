@@ -1,0 +1,16 @@
+Sub Copy1()
+
+Dim strValue As String
+Dim strCellNum As String
+Dim x As String
+x = 1
+
+For i = 1 To 1000 Step 2
+    strCellNum = "C" & i
+    strValue = Worksheets("Sheet5").Range(strCellNum).Value
+    Debug.Print strValue
+    Worksheets("Sheet6").Range("C" & x).Value = strValue
+    x = x + 1
+Next
+
+End Sub
