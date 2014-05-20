@@ -1,0 +1,97 @@
+Option Explicit
+
+Sub ImportSheet()
+    Dim i As Integer
+    Dim SourceFolder As String
+    Dim FileList As Variant
+    Dim GrabSheet As String
+    Dim FileType As String
+    Dim ActWorkBk As String
+    Dim ImpWorkBk As String
+    Dim NoImport As Boolean
+
+    'Define folder location (and filetypes)
+    SourceFolder = "C:\"
+    FileType = "*.xlsx"
+
+    'Define sheetname to copy
+    GrabSheet = "September"
+
+    'Creates list with filenames
+    FileList = ListFiles(SourceFolder & "/" & FileType)
+
+    'Imports data
+    Application.ScreenUpdating = False
+    ActWorkBk = ActiveWorkbook.Name
+    NoImport = False
+
+    For i = 1 To UBound(FileList)
+        'Opens file
+        Workbooks.Open (SourceFolder & "\" & FileList(i))
+        ImpWorkBk = ActiveWorkbook.Name
+
+        'Checks to see if the specific sheet exists in the workbook
+        On Error Resume Next
+            ActiveWorkbook.Sheets(GrabSheet).Select
+            If Err > 0 Then
+                NoImport = True
+                GoTo nxt
+            End If
+            Err.Clear
+        On Error GoTo 0
+
+        'Copies sheet
+        ActiveWorkbook.Sheets(GrabSheet).Copy after:=Workbooks(ActWorkBk).Sheets(Workbooks(ActWorkBk).Sheets.Count)
+
+        'Renames the imported sheet
+        On Error Resume Next
+            ActiveSheet.Name = FileList(i) & " - " & GrabSheet
+            Err.Clear
+        On Error GoTo 0
+
+nxt:
+        'Closes importfile
+        Workbooks(ImpWorkBk).Activate
+        Application.DisplayAlerts = False
+        ActiveWorkbook.Saved = True
+        ActiveWorkbook.Close SaveChanges:=False
+        Application.DisplayAlerts = True
+        Workbooks(ActWorkBk).Activate
+
+    Next i
+
+    'Error if some sheets were not found
+    If NoImport = True Then MsgBox "One or more sheets could not be found and imported!"
+
+    Application.ScreenUpdating = True
+End Sub
+
+
+'Function that creates an array with all the files in the folder
+Function ListFiles(Source As String) As Variant
+    Dim GetFileNames() As Variant
+    Dim i As Integer
+    Dim FileName As String
+
+    On Error GoTo ErrHndlr
+
+    i = 0
+    FileName = Dir(Source)
+    If FileName = "" Then GoTo ErrHndlr
+
+    'Loops until no more mathing files are found
+    Do While FileName <> ""
+        i = i + 1
+        ReDim Preserve GetFileNames(1 To i)
+        GetFileNames(i) = FileName
+        FileName = Dir()
+    Loop
+    ListFiles = GetFileNames
+    On Error GoTo 0
+    Exit Function
+
+    'If error
+ErrHndlr:
+    ListFiles = False
+    On Error GoTo 0
+End Function
