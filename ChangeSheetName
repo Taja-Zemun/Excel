@@ -1,0 +1,39 @@
+Sub ChangeSheetName()
+  'changes the name of the currently selected worksheet
+  'to a name based on the contents of cell B3 on the sheet.
+  Dim newName As String
+  'get current contents of B3
+  newName = ActiveSheet.Range("E20")
+  'remove any leading/trailing blanks from it
+  newName = Trim(newName)
+  'and verify that it is valid as a sheet name -
+  ' any invalid characters are changed to underscores and
+  ' if name is longer than 31 characters, all beyond 31 are
+  ' removed, and if it is all "white space" then the
+  ' function returns "Must be Named Manually"
+  ActiveSheet.Name = ValidatedSheetName(newName)
+End Sub
+Private Function ValidatedSheetName(proposedName As String) As String
+'The following characters are prohibited in excel worksheet names
+'  \ / ? * [ ]
+'Cannot be longer than 31 characters
+  Const invalidList = "\/|?*[]"
+  
+  Dim LC As Integer
+  
+  proposedName = Trim(proposedName)
+  If proposedName = "" Then
+    ValidatedSheetName = "Must be Named Manually"
+    Exit Function
+  End If
+  If Len(proposedName) > 31 Then
+    proposedName = Left(proposedName, 31)
+  End If
+  For LC = 1 To Len(proposedName)
+    'replace invalid characters with the underscore character
+    If InStr(invalidList, Mid(proposedName, LC, 1)) > 0 Then
+      Mid(proposedName, LC, 1) = "_"
+    End If
+  Next
+  ValidatedSheetName = proposedName
+End Function
